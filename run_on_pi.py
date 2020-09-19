@@ -1,6 +1,11 @@
 #!/usr/bin/env python3
 
 keyboard_export_layout = {
+        "ctrl":   0x01,
+        "shift":  0x02,
+        "alt":    0x04,
+        "meta":   0x08,
+
         "a":  0x04,
         "b":  0x05,
         "c":  0x06,
@@ -39,143 +44,49 @@ keyboard_export_layout = {
         "9":  0x26,
         "0":  0x27,
 
-#define KEY_ENTER 0x28 // Keyboard Return (ENTER)
-#define KEY_ESC 0x29 // Keyboard ESCAPE
-#define KEY_BACKSPACE 0x2a // Keyboard DELETE (Backspace)
-#define KEY_TAB 0x2b // Keyboard Tab
-#define KEY_SPACE 0x2c // Keyboard Spacebar
-#define KEY_MINUS 0x2d // Keyboard - and _
-#define KEY_EQUAL 0x2e // Keyboard =3D and +
-#define KEY_LEFTBRACE 0x2f // Keyboard [ and {
-#define KEY_RIGHTBRACE 0x30 // Keyboard ] and }
-#define KEY_BACKSLASH 0x31 // Keyboard \ and |
-#define KEY_HASHTILDE 0x32 // Keyboard Non-US # and ~
-#define KEY_SEMICOLON 0x33 // Keyboard ; and :
-#define KEY_APOSTROPHE 0x34 // Keyboard ' and "
-#define KEY_GRAVE 0x35 // Keyboard ` and ~
-#define KEY_COMMA 0x36 // Keyboard , and &lt;
-#define KEY_DOT 0x37 // Keyboard . and &gt;
-#define KEY_SLASH 0x38 // Keyboard / and ?
-#define KEY_CAPSLOCK 0x39 // Keyboard Caps Lock
+        "enter": 0x28,
+        "esc": 0x29,
+        "backspace": 0x2a,
+        "tab": 0x2b,
+        "space": 0x2c,
+        "minus": 0x2d,
+        "equal": 0x2e,
+        "leftbrace": 0x2f,
+        "rightbrace": 0x30,
+        "backslash": 0x31,
+        "hashtilde": 0x32,
+        "semicolon": 0x33,
+        "apostrophe": 0x34,
+        "grave": 0x35,
+        "comma": 0x36,
+        "dot": 0x37,
+        "slash": 0x38,
+        "capslock": 0x39,
 
-#define KEY_F1 0x3a // Keyboard F1
-#define KEY_F2 0x3b // Keyboard F2
-#define KEY_F3 0x3c // Keyboard F3
-#define KEY_F4 0x3d // Keyboard F4
-#define KEY_F5 0x3e // Keyboard F5
-#define KEY_F6 0x3f // Keyboard F6
-#define KEY_F7 0x40 // Keyboard F7
-#define KEY_F8 0x41 // Keyboard F8
-#define KEY_F9 0x42 // Keyboard F9
-#define KEY_F10 0x43 // Keyboard F10
-#define KEY_F11 0x44 // Keyboard F11
-#define KEY_F12 0x45 // Keyboard F12
+        "f1": 0x3a,
+        "f2": 0x3b,
+        "f3": 0x3c,
+        "f4": 0x3d,
+        "f5": 0x3e,
+        "f6": 0x3f,
+        "f7": 0x40,
+        "f8": 0x41,
+        "f9": 0x42,
+        "f10": 0x43,
+        "f11": 0x44,
+        "f12": 0x45,
 
-
-
-        "1"     : ,
-        "2"     : ,
-        "3"     : ,
-        "4"     : ,
-        "5"     : ,
-        "6"     : ,
-        "7"     : ,
-        "8"     : ,
-        "9"     : ,
-        "0"     : ,
-
-        "space"     : "p",
-        "backspace"     : "p",
-
-        # c#: shift
-        # d#: func
-        # f#: ctrl
-        # g#: super
-        # a#: meta
-
-        # numbers
-        "abf"    : "-",
-        "abg"    : "=",
-
-        # arrows
-        # "def"    : Key.left,
-        # "deg"    : Key.down,
-        # "ade"    : Key.up,
-        # "bde"    : Key.right,
-
-        # punctuation
-        "adf"    : "`",
-        "adg"    : "[",
-        "bdg"    : "]",
-        "efg"    : "/",
-        "abd"    : ";",
-        "aef"    : "'",
-        "bef"    : "\\",
-        "aeg"    : ",",
-        "ceg"    : ".",
-        "ceg"    : "/",
-
-        # Other keys
-        "afg"    : Key.tab,
-        "bfg"    : Key.enter,
-        "abe"    : Key.insert,
-        "abf"    : Key.delete, # opposite backspace
-        "abg"    : Key.esc,
-
-        # Meta direction
-        "cdef"   : Key.home,
-        "cdeg"   : Key.page_down,
-        "acde"   : Key.page_up,
-        "bcde"   : Key.end,
-
-        # Modifier combos
-        # "cdfg"   : ctrl alt,
-        # "acdf"   : ctrl mod,
-        # "bcdf"   : ctrl shift,
-        # "acdg"   : alt mod,
-        # "bcdg"   : alt shift,
-        # "abcd"   : mod shift,
-
-        # Function keys
-        # "cefg"   : <f1>,
-        # "acef"   : <f2>,
-        # "bcef"   : <f3>,
-        # "aceg"   : <f4>,
-        # "bceg"   : <f5>,
-        # "abce"   : <f6>,
-        # "defg"   : <f7>,
-        # "adef"   : <f8>,
-        # "bdef"   : <f9>,
-        # "adeg"   : <f10>,
-        # "bdeg"   : <f11>,
-        # "abde"   : <f12>,
-        "bcd"    : "f1",
-        "bce"    : "f2",
-        "bcf"    : "f3",
-        "bcg"    : "f4",
-        "bde"    : "f5",
-        "bdf"    : "f6",
-        "bdg"    : "f7",
-        "bef"    : "f8",
-        "beg"    : "f9",
-        "bfg"    : "f10",
-        "abf"    : "f11",
-        "abg"    : "f12",
-
-        # Don't know yet.
-        # "acfg"   : ,
-        # "bcfg"   : ,
-        # "abcf"   : ,
-        # "abcg"   : ,
-        # "adfg"   : ,
-        # "bdfg"   : ,
-        # "abdf"   : ,
-        # "abdg"   : ,
-        # "aefg"   : ,
-        # "befg"   : ,
-        # "abef"   : ,
-        # "abeg"   : ,
-
-        # "abfg"   : cancel everything,
+        "sysrq": 0x46,
+        "scrolllock": 0x47,
+        "pause": 0x48,
+        "insert": 0x49,
+        "home": 0x4a,
+        "pageup": 0x4b,
+        "delete": 0x4c,
+        "end": 0x4d,
+        "pagedown": 0x4e,
+        "right": 0x4f,
+        "left": 0x50,
+        "down": 0x51,
+        "up": 0x52,
 }
-
