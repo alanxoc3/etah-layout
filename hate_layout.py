@@ -30,49 +30,49 @@ hate_layout = {
         "bg"     : "b",
         "ab"     : Key.backspace,
 
-        # modifiers
-        # "cde"    : function on,
-        # "cdf"    : ctrl on,
-        # "cdg"    : alt on,
-        # "acd"    : mod on,
-        "bcd"    : Key.shift,
+        # c#: shift
+        # d#: func
+        # f#: ctrl
+        # g#: super
+        # a#: meta
 
         # numbers
-        "cef"    : "1",
-        "ceg"    : "2",
-        "ace"    : "3",
-        "bce"    : "4",
-        "cfg"    : "5",
-        "acf"    : "6",
-        "bcf"    : "7",
-        "acg"    : "8",
-        "bcg"    : "9",
-        "abc"    : "0",
+        "bcd"    : "1",
+        "bce"    : "2",
+        "bcf"    : "3",
+        "bcg"    : "4",
+        "bde"    : "5",
+        "bdf"    : "6",
+        "bdg"    : "7",
+        "bef"    : "8",
+        "beg"    : "9",
+        "bfg"    : "0",
+        "abf"    : "-",
+        "abg"    : "=",
 
         # arrows
-        "def"    : Key.left,
-        "deg"    : Key.down,
-        "ade"    : Key.up,
-        "bde"    : Key.right,
+        # "def"    : Key.left,
+        # "deg"    : Key.down,
+        # "ade"    : Key.up,
+        # "bde"    : Key.right,
 
         # punctuation
-        "dfg"    : "-",
         "adf"    : "`",
-        "bdf"    : "=",
         "adg"    : "[",
         "bdg"    : "]",
-        "abd"    : ";",
         "efg"    : "/",
+        "abd"    : ";",
         "aef"    : "'",
         "bef"    : "\\",
         "aeg"    : ",",
-        "beg"    : ".",
+        "ceg"    : ".",
+        "ceg"    : "/",
 
         # Other keys
         "afg"    : Key.tab,
         "bfg"    : Key.enter,
         "abe"    : Key.insert,
-        "abf"    : Key.delete,
+        "abf"    : Key.delete, # opposite backspace
         "abg"    : Key.esc,
 
         # Meta direction
@@ -102,6 +102,18 @@ hate_layout = {
         # "adeg"   : <f10>,
         # "bdeg"   : <f11>,
         # "abde"   : <f12>,
+        "bcd"    : "f1",
+        "bce"    : "f2",
+        "bcf"    : "f3",
+        "bcg"    : "f4",
+        "bde"    : "f5",
+        "bdf"    : "f6",
+        "bdg"    : "f7",
+        "bef"    : "f8",
+        "beg"    : "f9",
+        "bfg"    : "f10",
+        "abf"    : "f11",
+        "abg"    : "f12",
 
         # Don't know yet.
         # "acfg"   : ,
