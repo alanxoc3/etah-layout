@@ -1,5 +1,6 @@
-# Hate
-The hate layout is a layout that maps keys on a piano to keys on a keyboard.
+# Etah Layout
+The Etah layout is a keyboard layout that maps keys on a piano to keys on a
+computer keyboard.
 
 ## Current Progress
 Currently, I only have all 26 Latin letters, space, and backspace mapped and
