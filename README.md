@@ -1,5 +1,5 @@
-# Etah Layout
-The Etah layout is a keyboard layout that maps keys on a piano to keys on a
+# Hatel Layout
+The Hatel layout is a keyboard layout that maps keys on a piano to keys on a
 computer keyboard.
 
 ## Current Progress
