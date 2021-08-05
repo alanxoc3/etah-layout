@@ -3,6 +3,7 @@ import argparse
 import time
 from hate_layout import hate_layout
 from pynput.keyboard import Key, Controller
+import subprocess
 
 default_value = None
 
@@ -55,10 +56,12 @@ def readInput(input_device):
 
         if current_buffer and time.time() - start > .1:
             key = buf_to_key(current_buffer)
+            print(key)
             if key:
                 if key == Key.shift:
                     keyboard.press(key)
                 else:
+                    subprocess.run(["ttrack", "rec", "hatel", "3s"]) # TODO: Make a hook or something.
                     keyboard.press(key)
                     keyboard.release(key)
                     if keyboard.shift_pressed:

@@ -1,7 +1,29 @@
 num_of_fingers = 4
 num_of_keys = 7
+include_less_than = false
 
-keys="0123456789abcde"
+keys="bcdefga"
+
+function sortstr(s)
+    local arr = {}
+    for i=1, #s do
+        add(arr, sub(s,i,i))
+    end
+
+    for n=2,#arr do
+        local i=n
+        while i>1 and ord(arr[i]) < ord(arr[i-1]) do
+            arr[i],arr[i-1]=arr[i-1],arr[i]
+            i=i-1
+        end
+    end
+
+    local rs = ""
+    for i=1, #arr do
+        rs = rs..arr[i]
+    end
+    return rs
+end
 
 function str_to_set(str)
    local tab = {}
@@ -44,7 +66,7 @@ function set_to_str(set)
          cur_str = cur_str..k
       end
    end
-   return cur_str
+   return sortstr(cur_str)
 end
 
 function does_list_contain_set(list, set)
@@ -64,12 +86,13 @@ function calc(str, cur)
       local cur_str = str..sub(keys, i, i)
       local cur_set = str_to_set(cur_str)
 
-      if not does_list_contain_set(all_combos, cur_set) then
-         number += 1
-         add(all_combos, cur_set)
+      if (include_less_than or cur_set.len == num_of_fingers) and not does_list_contain_set(all_combos, cur_set) then
+        number += 1
+
+        add(all_combos, cur_set)
       end
       if #cur_str < num_of_fingers and i < num_of_keys then
-         number += calc(cur_str, i+1)
+             number += calc(cur_str, i+1)
       end
    end
 
