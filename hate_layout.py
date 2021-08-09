@@ -33,11 +33,11 @@ hate_layout = {
 
         # Some things to assign...
         # - = Key.insert Key.delete
-        "abc"    : "", # unassigned
-        "abd"    : "", # unassigned
+        "abc"    : Key.insert,
+        "abd"    : "-",
         "abe"    : "", # unassigned
-        "abf"    : "", # unassigned
-        "abg"    : "", # unassigned
+        "abf"    : "=",
+        "abg"    : Key.delete,
         "acd"    : "", # unassigned
         "ace"    : Key.tab,
         "acf"    : "", # unassigned
@@ -75,4 +75,11 @@ hate_layout = {
         "2"      : Key.shift,
         "3"      : Key.cmd,
         "4"      : "", # Key.fn
+
+        # arrow keys
+        # pg up, pg dwn, home, end
+        # prnt scrn
+
+        # 5  black keys = midi mode
+        # 5+ white keys = type mode
 }
