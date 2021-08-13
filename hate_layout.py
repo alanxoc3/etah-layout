@@ -34,9 +34,9 @@ hate_layout = {
         # Some things to assign...
         # - = Key.insert Key.delete
         "abc"    : Key.insert,
-        "abd"    : "-",
+        "abd"    : "[",
         "abe"    : "", # unassigned
-        "abf"    : "=",
+        "abf"    : "]",
         "abg"    : Key.delete,
         "acd"    : "", # unassigned
         "ace"    : Key.tab,
@@ -58,7 +58,7 @@ hate_layout = {
         "bef"    : "8",
         "beg"    : "9",
         "bfg"    : "0",
-        "cde"    : "[",
+        "cde"    : "-",
         "cdf"    : "/",
         "cdg"    : ",",
         "cef"    : "'",
@@ -67,7 +67,7 @@ hate_layout = {
         "def"    : ";",
         "deg"    : "`",
         "dfg"    : "\\",
-        "efg"    : "]",
+        "efg"    : "=",
 
         # 5 black keys
         "0"      : Key.alt,
