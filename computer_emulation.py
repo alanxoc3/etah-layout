@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 import argparse
 import time
-from hate_layout import hate_layout
+from hatel_layout import hatel_layout
 from pynput.keyboard import Key, Controller
 import subprocess
 
@@ -37,7 +37,7 @@ def buf_to_key(buf):
     l = list(buf)
     l.sort()
     s = "".join(l)
-    if s in hate_layout: return hate_layout[s]
+    if s in hatel_layout: return hatel_layout[s]
     else: return None
 
 def readInput(input_device):

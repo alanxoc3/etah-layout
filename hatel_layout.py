@@ -1,6 +1,6 @@
 from pynput.keyboard import Key
 
-hate_layout = {
+hatel_layout = {
         "a"      : "k",
         "b"      : "l",
         "c"      : "e",
