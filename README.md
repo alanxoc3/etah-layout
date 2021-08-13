@@ -60,3 +60,17 @@ Here is the specification so far:
 | DEG         | `                   |
 | DFG         | \\                  |
 | EFG         | =                   |
+
+`D#` represents the shift key. The remaining black keys will be reserved for:
+- CMD/Super/Windows
+- Alt
+- Ctrl
+- Fn (programmable mappings)
+
+Some other mappings:
+- Releasing four different white key letters will cancel the current modifer.
+- Releasing 5, 6, or all 7 white keys will disable hatel.
+- If hatel is disabled, pressing all 5 black keys will re-enable hatel.
+
+Disabling hatel is useful if you need to record midi, you want to play an
+actual piano in the middle of your typing session.
