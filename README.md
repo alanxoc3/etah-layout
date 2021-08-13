@@ -74,3 +74,14 @@ Some other mappings:
 
 Disabling hatel is useful if you need to record midi, you want to play an
 actual piano in the middle of your typing session.
+
+The function key is used to switch modes. Hitting a white key after the
+function key switches to that mode. To leave any mode, you can hit the function
+key then the previous mode, hit four white keys, hit five or more white keys
+(disabling hatel too), or you can hit all black keys. Pressing a modifier
+before pressing the function key will result in doing nothing special.
+
+Some modes that will probably be implemented:
+- Mouse mode (left, middle, right, grid-like movement similar to [keynav](https://github.com/jordansissel/keynav))
+- Navigation mode (arrows, page down/up, home, end)
+- Other modes probably wouldn't be official, but it should be configurable.
