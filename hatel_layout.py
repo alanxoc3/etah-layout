@@ -9,7 +9,7 @@ hatel_layout = {
         "f"      : "h",
         "g"      : "j",
 
-        "ab"     : Key.backspace,
+        "ab"     : "BackSpace",
         "ac"     : "n",
         "ad"     : "d",
         "ae"     : "p",
@@ -23,7 +23,7 @@ hatel_layout = {
         "cd"     : "x",
         "ce"     : "o",
         "cf"     : "i",
-        "cg"     : Key.space,
+        "cg"     : "space",
         "de"     : "q",
         "df"     : "s",
         "dg"     : "r",
@@ -33,13 +33,13 @@ hatel_layout = {
 
         # Some things to assign...
         # - = Key.insert Key.delete
-        "abc"    : Key.insert,
-        "abd"    : "[",
+        "abc"    : "Insert",
+        "abd"    : "bracketleft",
         "abe"    : "", # unassigned
-        "abf"    : "]",
-        "abg"    : Key.delete,
+        "abf"    : "bracketright",
+        "abg"    : "Delete",
         "acd"    : "", # unassigned
-        "ace"    : Key.tab,
+        "ace"    : "Tab",
         "acf"    : "", # unassigned
         "acg"    : "", # unassigned
         "ade"    : "", # unassigned
@@ -47,7 +47,7 @@ hatel_layout = {
         "adg"    : "", # unassigned
         "aef"    : "", # unassigned
         "aeg"    : "", # unassigned
-        "afg"    : Key.esc,
+        "afg"    : "Escape",
         "bcd"    : "1",
         "bce"    : "2",
         "bcf"    : "3",
@@ -58,23 +58,23 @@ hatel_layout = {
         "bef"    : "8",
         "beg"    : "9",
         "bfg"    : "0",
-        "cde"    : "-",
-        "cdf"    : "/",
-        "cdg"    : ",",
-        "cef"    : "'",
-        "ceg"    : Key.enter,
-        "cfg"    : ".",
-        "def"    : ";",
-        "deg"    : "`",
-        "dfg"    : "\\",
-        "efg"    : "=",
+        "cde"    : "minus",
+        "cdf"    : "slash",
+        "cdg"    : "comma",
+        "cef"    : "apostrophe",
+        "ceg"    : "enter",
+        "cfg"    : "period",
+        "def"    : "semicolon",
+        "deg"    : "grave",
+        "dfg"    : "backslash",
+        "efg"    : "equal",
 
         # 5 black keys
-        "0"      : Key.alt,
-        "1"      : Key.ctrl,
-        "2"      : Key.shift,
-        "3"      : Key.cmd,
-        "4"      : "", # Key.fn
+        "0"      : "super",
+        "1"      : "", # fn
+        "2"      : "shift",
+        "3"      : "ctrl",
+        "4"      : "alt",
 
         # arrow keys
         # pg up, pg dwn, home, end
