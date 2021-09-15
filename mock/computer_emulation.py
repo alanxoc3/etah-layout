@@ -51,7 +51,7 @@ def readInput(all_midi_inputs, debug):
                     l = list(modifiers_pressed)
                     l.append(key)
                     subprocess.Popen(["xdotool", "key", "+".join(l)], preexec_fn=preexec_function)
-                    subprocess.run(["ttrack", "rec", "hatel", "3s"]) # TODO: Make a hook or something.
+                    subprocess.run(["ttrack", "rec", "piano/hatel", "3s"]) # TODO: Make a hook or something.
                     modifiers_pressed = set()
 
                 current_buffer.clear()

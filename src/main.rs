@@ -17,6 +17,18 @@ fn run() -> Result<(), Box<dyn Error>> {
     let mut midi_in = MidiInput::new("midir reading input")?;
     midi_in.ignore(Ignore::None);
 
+/*
+use std::process::Command;
+
+fn main() {
+    let output = Command::new("echo")
+        .arg("Hello world")
+        .output()
+        .expect("Failed to execute command");
+
+    assert_eq!(b"Hello world\n", output.stdout.as_slice());
+}
+*/
     // I can use "port" or "get_name" to check the current state. There is also a close method for MidiInputConnection. See:
     // https://docs.rs/midir/0.7.0/midir/struct.MidiInput.html
     let in_ports = midi_in.ports();
