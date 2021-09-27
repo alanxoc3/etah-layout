@@ -75,11 +75,12 @@ hatel_layout = {
         "2"      : "shift",
         "3"      : "ctrl",
         "4"      : "alt",
+        "01234"  : "enable",
 
         # arrow keys
         # pg up, pg dwn, home, end
         # prnt scrn
 
-        # 5  black keys = midi mode
-        # 5+ white keys = type mode
+        # 5  black keys = type mode
+        # 5+ white keys = midi mode
 }

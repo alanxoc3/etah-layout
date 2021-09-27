@@ -1,16 +1,7 @@
 #!/usr/bin/env python3
-modifiers_pressed = set()
-
 def preexec_function():
     import signal
     signal.signal(signal.SIGINT, signal.SIG_IGN)
-
-def press_modifier(key):
-    global modifiers_pressed
-    if key == "shift" or key == "ctrl" or key == "super" or key == "alt":
-        modifiers_pressed.add(key)
-        return True
-    return False
 
 def raw_to_note(raw_number):
     num = (raw_number - 21) % 12
@@ -23,12 +14,14 @@ def buf_to_key(buf):
     l.sort()
     s = "".join(l)
     if s in hatel_layout: return hatel_layout[s]
+    elif len(s) >= 5 and s.isalpha(): return "disable"
     else: return None
 
 def readInput(all_midi_inputs, debug):
     import time
     import subprocess
-    global modifiers_pressed
+    modifiers_pressed = set()
+    hatel_enabled = False
     current_buffer = set()
     start = time.time()
     while True:
@@ -46,15 +39,31 @@ def readInput(all_midi_inputs, debug):
 
             if current_buffer and time.time() - start > .1:
                 key = buf_to_key(current_buffer)
-
-                if key and not press_modifier(key):
-                    l = list(modifiers_pressed)
-                    l.append(key)
-                    subprocess.Popen(["xdotool", "key", "+".join(l)], preexec_fn=preexec_function)
-                    subprocess.run(["ttrack", "rec", "piano/hatel", "3s"]) # TODO: Make a hook or something.
-                    modifiers_pressed = set()
-
                 current_buffer.clear()
+                ttrack_duration = "3s"
+
+                if key == "enable":
+                    ttrack_duration = "1s"
+                    hatel_enabled = True
+                    modifiers_pressed = set()
+                elif key == "disable":
+                    ttrack_duration = "1s"
+                    hatel_enabled = False
+                    modifiers_pressed = set()
+                elif hatel_enabled and key is not None:
+                    if key == "shift" or key == "ctrl" or key == "super" or key == "alt":
+                        modifiers_pressed.add(key)
+                    else:
+                        l = list(modifiers_pressed)
+                        l.append(key)
+
+                        if key == "enable" or hatel_enabled:
+                            subprocess.Popen(["xdotool", "key", "+".join(l)], preexec_fn=preexec_function)
+
+                        modifiers_pressed = set()
+
+                # TODO: Make a hook or something.
+                subprocess.run(["ttrack", "rec", "piano/" + ("hatel" if hatel_enabled else "midi"), ttrack_duration])
 
 # start the program!
 import pygame.midi
