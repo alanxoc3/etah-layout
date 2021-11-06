@@ -5,4 +5,5 @@ authors = ["Alan Morgan <alanxoc3@gmail.com"]
 edition = "2018"
 
 [dependencies]
+lazy_static = "1.4.0"
 midir = "0.7.0"
