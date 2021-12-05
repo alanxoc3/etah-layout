@@ -3,78 +3,78 @@ from pynput.keyboard import Key
 hatel_layout = {
         "a"      : "k",
         "b"      : "l",
-        "c"      : "e",
-        "d"      : "t",
+        "c"      : "h",
+        "d"      : "j",
         "e"      : "a",
-        "f"      : "h",
-        "g"      : "j",
+        "f"      : "e",
+        "g"      : "t",
 
-        "ab"     : "BackSpace",
-        "ac"     : "n",
-        "ad"     : "d",
-        "ae"     : "p",
-        "af"     : "g",
-        "ag"     : "z",
-        "bc"     : "v",
-        "bd"     : "c",
-        "be"     : "w",
-        "bf"     : "y",
-        "bg"     : "u",
-        "cd"     : "x",
-        "ce"     : "o",
-        "cf"     : "i",
-        "cg"     : "space",
-        "de"     : "q",
-        "df"     : "s",
-        "dg"     : "r",
-        "ef"     : "b",
-        "eg"     : "m",
-        "fg"     : "f",
+        "ab"     : "z",
+        "ac"     : "u",
+        "ad"     : "space",
+        "ae"     : "r",
+        "af"     : "m",
+        "ag"     : "f",
+        "bc"     : "BackSpace",
+        "bd"     : "n",
+        "be"     : "d",
+        "bf"     : "p",
+        "bg"     : "g",
+        "cd"     : "v",
+        "ce"     : "c",
+        "cf"     : "w",
+        "cg"     : "y",
+        "de"     : "x",
+        "df"     : "o",
+        "dg"     : "i",
+        "ef"     : "q",
+        "eg"     : "s",
+        "fg"     : "b",
 
         # Some things to assign...
         # - = Key.insert Key.delete
-        "abc"    : "Insert",
-        "abd"    : "bracketleft",
+        "abc"    : "Delete",
+        "abd"    : "", # unassigned
         "abe"    : "", # unassigned
-        "abf"    : "bracketright",
-        "abg"    : "Delete",
-        "acd"    : "", # unassigned
-        "ace"    : "Tab",
-        "acf"    : "", # unassigned
-        "acg"    : "", # unassigned
-        "ade"    : "", # unassigned
-        "adf"    : "", # unassigned
-        "adg"    : "", # unassigned
-        "aef"    : "", # unassigned
-        "aeg"    : "", # unassigned
-        "afg"    : "Escape",
-        "bcd"    : "1",
-        "bce"    : "2",
-        "bcf"    : "3",
-        "bcg"    : "4",
-        "bde"    : "5",
-        "bdf"    : "6",
-        "bdg"    : "7",
-        "bef"    : "8",
-        "beg"    : "9",
-        "bfg"    : "0",
-        "cde"    : "minus",
-        "cdf"    : "slash",
-        "cdg"    : "comma",
-        "cef"    : "apostrophe",
-        "ceg"    : "enter",
-        "cfg"    : "period",
-        "def"    : "semicolon",
-        "deg"    : "grave",
-        "dfg"    : "backslash",
-        "efg"    : "equal",
+        "abf"    : "", # unassigned
+        "abg"    : "Escape",
+        "acd"    : "4",
+        "ace"    : "7",
+        "acf"    : "9",
+        "acg"    : "0",
+        "ade"    : "comma",
+        "adf"    : "enter",
+        "adg"    : "period",
+        "aef"    : "grave",
+        "aeg"    : "backslash",
+        "afg"    : "equal",
+        "bcd"    : "Insert",
+        "bce"    : "bracketleft",
+        "bcf"    : "", # unassigned
+        "bcg"    : "bracketright",
+        "bde"    : "", # unassigned
+        "bdf"    : "Tab",
+        "bdg"    : "", # unassigned
+        "bef"    : "", # unassigned
+        "beg"    : "", # unassigned
+        "bfg"    : "", # unassigned
+        "cde"    : "1",
+        "cdf"    : "2",
+        "cdg"    : "3",
+        "cef"    : "5",
+        "ceg"    : "6",
+        "cfg"    : "8",
+        "def"    : "minus",
+        "deg"    : "slash",
+        "dfg"    : "apostrophe",
+        "efg"    : "semicolon",
 
         # 5 black keys
-        "0"      : "super",
+        "0"      : "alt",
         "1"      : "", # fn
-        "2"      : "shift",
-        "3"      : "ctrl",
-        "4"      : "alt",
+        "2"      : "super",
+        "3"      : "shift",
+        "4"      : "ctrl",
         "01234"  : "enable",
 
         # arrow keys
