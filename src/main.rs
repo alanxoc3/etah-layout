@@ -20,20 +20,23 @@ fn run() -> Result<(), Box<dyn Error>> {
     // I can use "port" or "get_name" to check the current state. There is also a close method for MidiInputConnection. See:
     // https://docs.rs/midir/0.7.0/midir/struct.MidiInput.html
     let in_ports = midi_in.ports();
-    let in_port = match in_ports.len() {
-        0 => return Err("no input port found".into()),
-        _ => {
-            &in_ports[in_ports.len()-1]
-        },
-    };
 
-    let in_port_name = midi_in.port_name(in_port)?;
-    println!("Reading from: {}", in_port_name);
+    if in_ports.len() == 0 {
+        return Err("no input port found".into())
+    }
 
-    let _conn = midi_in.connect(in_port, "midi-port", |stamp, message, _| {
-        println!("{}: {:?} (len = {})", stamp, message, message.len());
-        println!("{}", LAYOUT.get(&"a").unwrap_or(&"invalid"));
-    }, ())?;
+    println!("Listening on all midi in connections:");
+    for i in 0..in_ports.len() {
+        let in_port = &in_ports[i];
+        // let in_port_name = midi_in.port_name(in_port)?;
+        // println!("{}: {}", i, in_port_name);
+
+        let _conn = (&mut midi_in).connect(in_port, "midi-port", |stamp, message, _| {
+            println!("{}: {:?} (len = {})", stamp, message, message.len());
+            println!("{}", LAYOUT.get(&"a").unwrap_or(&"invalid"));
+        }, ())?;
+    }
+
 
     thread::park();
 
