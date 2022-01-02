@@ -4,8 +4,8 @@ def preexec_function():
     signal.signal(signal.SIGINT, signal.SIG_IGN)
 
 def raw_to_note(raw_number):
-    num = (raw_number - 21) % 12
-    note_dict = { 0: 'a', 2: 'b', 3: 'c', 5: 'd', 7: 'e', 8: 'f', 10: 'g', 1: '0', 4: '1', 6: '2', 9: '3', 11: '4', }
+    num = raw_number % 12
+    note_dict = { 9: 'a', 11: 'b', 0: 'c', 2: 'd', 4: 'e', 5: 'f', 7: 'g', 10: '0', 1: '1', 3: '2', 6: '3', 8: '4', }
     return note_dict[num]
 
 def buf_to_key(buf):
