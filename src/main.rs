@@ -3,6 +3,7 @@ extern crate midir;
 use std::thread;
 use hatel::LAYOUT;
 use hatel::NUM_TO_NOTE;
+use std::process::Command;
 
 use midir::{MidiInput, Ignore, MidiInputConnection};
 
@@ -67,4 +68,9 @@ fn midi_listener(stamp: u64, message: &[u8]) {
         let note = num_to_note(message[1]);
         println!("{}: {}", note, LAYOUT.get(&note).unwrap_or(&"invalid"));
     }
+
+    Command::new("echo")
+        .arg("hello")
+        .spawn()
+        .expect("echo failed");
 }
