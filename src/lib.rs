@@ -4,20 +4,20 @@ use lazy_static::lazy_static;
 use std::collections::HashMap;
 
 lazy_static! {
-    pub static ref NUM_TO_NOTE: HashMap<u8, &'static str> = {
+    pub static ref NUM_TO_NOTE: HashMap<u8, char> = {
         HashMap::from([
-            (9 , "a"),
-            (11, "b"),
-            (0 , "c"),
-            (2 , "d"),
-            (4 , "e"),
-            (5 , "f"),
-            (7 , "g"),
-            (10, "0"),
-            (1 , "1"),
-            (3 , "2"),
-            (6 , "3"),
-            (8 , "4"),
+            (9 , 'a'),
+            (11, 'b'),
+            (0 , 'c'),
+            (2 , 'd'),
+            (4 , 'e'),
+            (5 , 'f'),
+            (7 , 'g'),
+            (10, '0'),
+            (1 , '1'),
+            (3 , '2'),
+            (6 , '3'),
+            (8 , '4'),
         ])
     };
 

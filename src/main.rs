@@ -1,5 +1,9 @@
 extern crate midir;
 
+use std::sync::Mutex;
+use lazy_static::lazy_static;
+use std::time::UNIX_EPOCH;
+use std::time::SystemTime;
 use std::collections::HashSet;
 use std::time::Duration;
 use std::collections::HashMap;
@@ -10,16 +14,18 @@ use std::process::Command;
 
 use midir::{MidiInput, MidiInputConnection};
 
-fn num_to_note(note_num: u8) -> &'static str {
-    NUM_TO_NOTE.get(&(note_num % 12)).unwrap_or(&"invalid")
+fn num_to_note(note_num: u8) -> char {
+    NUM_TO_NOTE.get(&(note_num % 12)).unwrap().clone()
 }
+
+const AFTER_PRESS_WAIT: u64 = 100;
 
 fn main() {
     let mut input_map = HashMap::from([]);
 
-    let scheduler = thread::spawn(move || {
+    let _scheduler = thread::spawn(move || {
+        let wait_time = Duration::from_millis(1000);
         loop {
-            let wait_time = Duration::from_millis(1000);
             refresh_connections(&mut input_map);
             thread::sleep(wait_time);
         }
@@ -33,7 +39,7 @@ fn main() {
 }
 
 struct MidiChannel {
-    connection: MidiInputConnection<()>,
+    connection: MidiInputConnection<String>,
     portname: String,
 }
 
@@ -56,13 +62,15 @@ fn refresh_connections(input_map: &mut HashMap<String, MidiChannel>) {
 
     for port_name in touched_ports.difference(&prev_ports) {
         println!("New Connection: {}", port_name);
+        BUFFER_MAP.lock().unwrap().insert(port_name.clone(), HashSet::new());
+        ENABLED_MAP.lock().unwrap().insert(port_name.clone(), false);
 
         let local_midi_in = MidiInput::new("midir reading input").unwrap();
         let in_port = touched_ports_map.get(port_name).unwrap();
 
-        let conn = local_midi_in.connect(in_port, "midi-port", |stamp, message, _| {
-            midi_listener(stamp, &message);
-        }, ());
+        let conn = local_midi_in.connect(in_port, "midi-port", |stamp, message, closure_port_name| {
+            midi_listener(stamp, &message, &closure_port_name);
+        }, port_name.clone());
 
         if conn.is_ok() {
             input_map.insert(port_name.clone(), MidiChannel { connection: conn.unwrap(), portname: port_name.clone() });
@@ -73,17 +81,81 @@ fn refresh_connections(input_map: &mut HashMap<String, MidiChannel>) {
     }
 }
 
-fn midi_listener(_stamp: u64, message: &[u8]) {
+lazy_static! {
+    static ref BUFFER_MAP: Mutex<HashMap<String, HashSet<char>>> = Mutex::new(HashMap::new());
+    static ref ENABLED_MAP: Mutex<HashMap<String, bool>> = Mutex::new(HashMap::new());
+}
+
+// static map maybe?
+fn midi_listener(stamp: u64, message: &[u8], port_name: &String) {
+    // i want the current buffer (a, c, d, g, 3) & buffer begin time.
+    let millis = SystemTime::now()
+        .duration_since(UNIX_EPOCH)
+        .unwrap()
+        .as_millis();
+
     // println!("{}: {:?} (len = {})", stamp, message, message.len());
     if message.len() >= 2 {
         let note = num_to_note(message[1]);
         if message[2] != 0 {
-            println!("{}: {}", note, LAYOUT.get(&note).unwrap_or(&"invalid"));
+            if BUFFER_MAP.lock().unwrap().get_mut(&port_name.clone()).unwrap().len() == 0 {
+                BUFFER_MAP.lock().unwrap().get_mut(&port_name.clone()).unwrap().insert(note.clone());
+
+                let new_port_name = port_name.clone();
+                let local_thread = thread::spawn(move || {
+                    let wait_time = Duration::from_millis(AFTER_PRESS_WAIT);
+                    thread::sleep(wait_time);
+
+                    let snapshot_of_charset = BUFFER_MAP.lock().unwrap().get(&new_port_name.clone()).unwrap().clone();
+                    BUFFER_MAP.lock().unwrap().get_mut(&new_port_name.clone()).unwrap().clear();
+                    let layout_str = chars_to_layout_str(&snapshot_of_charset);
+                    let modifiers = get_modifiers(&snapshot_of_charset);
+
+                    if *ENABLED_MAP.lock().unwrap().get(&new_port_name.clone()).unwrap() {
+                        if layout_str.len() >= 5 {
+                            ENABLED_MAP.lock().unwrap().insert(new_port_name.clone(), false);
+                        } else {
+                            let key = LAYOUT.get(layout_str.as_str()).unwrap_or(&"invalid");
+                            if *key != "invalid" {
+                                Command::new("echo")
+                                    .arg(format!("keys: {}", key))
+                                    .spawn()
+                                    .expect("echo failed");
+                            }
+                        }
+                    } else if modifiers.len() == 5 {
+                        ENABLED_MAP.lock().unwrap().insert(new_port_name.clone(), true);
+                    }
+                });
+            } else {
+                BUFFER_MAP.lock().unwrap().get_mut(&port_name.clone()).unwrap().insert(note.clone());
+            }
+
+            // println!("{}: {}, {}, {}", note, LAYOUT.get(&note.to_string().as_str()).unwrap_or(&"invalid"), millis, stamp);
+        }
+    }
+}
+
+fn get_modifiers(chars: &HashSet<char>) -> HashSet<char> {
+    let mut modifiers = HashSet::new();
+    for character in chars {
+        if *character >= '0' && *character <= '4' {
+            modifiers.insert(character.clone());
+        }
+    }
+    return modifiers;
+}
+
+fn chars_to_layout_str(chars: &HashSet<char>) -> String {
+    let mut layout_chars = Vec::new();
+
+    for character in chars {
+        if *character >= 'a' && *character <= 'g' {
+            layout_chars.push(character.clone());
         }
     }
 
-    // Command::new("echo")
-    //     .arg("hello")
-    //     .spawn()
-    //     .expect("echo failed");
+    layout_chars.sort();
+
+    return layout_chars.into_iter().collect();
 }
