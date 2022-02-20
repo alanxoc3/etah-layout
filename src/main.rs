@@ -11,6 +11,7 @@ use std::thread;
 use hatel::LAYOUT;
 use hatel::NUM_TO_NOTE;
 use std::process::Command;
+use itertools::concat;
 
 use midir::{MidiInput, MidiInputConnection};
 
@@ -117,8 +118,9 @@ fn midi_listener(stamp: u64, message: &[u8], port_name: &String) {
                         } else {
                             let key = LAYOUT.get(layout_str.as_str()).unwrap_or(&"invalid");
                             if *key != "invalid" {
-                                Command::new("echo")
-                                    .arg(format!("keys: {}", key))
+                                Command::new("xdotool")
+                                    .arg("key")
+                                    .arg(concat([modifiers, vec![String::from(*key)]]).join(&String::from("+")))
                                     .spawn()
                                     .expect("echo failed");
                             }
@@ -136,11 +138,14 @@ fn midi_listener(stamp: u64, message: &[u8], port_name: &String) {
     }
 }
 
-fn get_modifiers(chars: &HashSet<char>) -> HashSet<char> {
-    let mut modifiers = HashSet::new();
-    for character in chars {
-        if *character >= '0' && *character <= '4' {
-            modifiers.insert(character.clone());
+fn get_modifiers(chars: &HashSet<char>) -> Vec<String> {
+    let mut modifiers = Vec::new();
+    let mut sorted_chars: Vec<&char> = chars.into_iter().collect();
+    sorted_chars.sort();
+
+    for character in &sorted_chars {
+        if **character >= '0' && **character <= '4' {
+            modifiers.push(String::from(*LAYOUT.get(character.to_string().as_str()).unwrap_or(&"invalid")));
         }
     }
     return modifiers;
