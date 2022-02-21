@@ -175,13 +175,6 @@ fn simulate_keyboard_press(key_emulation: &KeyEmulationType, modifiers: Vec<Stri
     match LAYOUT.get(layout_str.as_str()) {
         Some(key) => {
             match *key_emulation {
-                KeyEmulationType::Xdotool => {
-                    Command::new("xdotool")
-                        .arg("key")
-                        .arg(concat([modifiers, vec![String::from(key[*key_emulation as usize])]]).join(&String::from("+")))
-                        .spawn()
-                        .expect("xdotool failed");
-                },
                 KeyEmulationType::Echo => {
                     let mut _cmd = Command::new("echo");
                     _cmd.arg("key: ").arg(key[*key_emulation as usize]);
@@ -192,7 +185,27 @@ fn simulate_keyboard_press(key_emulation: &KeyEmulationType, modifiers: Vec<Stri
 
                     _cmd.spawn().expect("echo failed");
                 },
-                _ => {},
+                KeyEmulationType::Xdotool => {
+                    Command::new("xdotool")
+                        .arg("key")
+                        .arg(concat([modifiers, vec![String::from(key[*key_emulation as usize])]]).join(&String::from("+")))
+                        .spawn()
+                        .expect("xdotool failed");
+                },
+                KeyEmulationType::Osascript => {
+                    let mut _cmd = Command::new("osascript");
+                    _cmd.arg("-e");
+
+                    let argstr = format!("tell application \"System Events\" to key code {}", key[*key_emulation as usize]);
+
+                    // let argstr = if modifiers.len() > 0 {
+                    //     format!("{} {}", modifiers.join(", "))
+                    // } else {
+                    //     argstr
+                    // }
+
+                    _cmd.arg(argstr).spawn().expect("osascript failed");
+                },
             }
         },
         None      => {},
