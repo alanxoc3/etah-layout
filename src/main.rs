@@ -2,18 +2,25 @@ extern crate midir;
 
 use std::sync::Mutex;
 use lazy_static::lazy_static;
-use std::time::UNIX_EPOCH;
-use std::time::SystemTime;
 use std::collections::HashSet;
 use std::time::Duration;
 use std::collections::HashMap;
 use std::thread;
-use hatel::LAYOUT;
-use hatel::NUM_TO_NOTE;
+use hatel::{KeyEmulationType, LAYOUT, NUM_TO_NOTE};
 use std::process::Command;
 use itertools::concat;
 
 use midir::{MidiInput, MidiInputConnection};
+use clap::{Parser};
+
+// Arguments the program accepts.
+#[derive(Parser, Debug)]
+#[clap(version)]
+struct Args {
+    /// Method for key input
+    #[clap(arg_enum)]
+    key_emulation: KeyEmulationType,
+}
 
 fn num_to_note(note_num: u8) -> char {
     NUM_TO_NOTE.get(&(note_num % 12)).unwrap().clone()
@@ -22,12 +29,13 @@ fn num_to_note(note_num: u8) -> char {
 const AFTER_PRESS_WAIT: u64 = 100;
 
 fn main() {
+    let args = Args::parse();
     let mut input_map = HashMap::from([]);
 
     let _scheduler = thread::spawn(move || {
         let wait_time = Duration::from_millis(1000);
         loop {
-            refresh_connections(&mut input_map);
+            refresh_connections(&args.key_emulation, &mut input_map);
             thread::sleep(wait_time);
         }
     });
@@ -40,11 +48,10 @@ fn main() {
 }
 
 struct MidiChannel {
-    connection: MidiInputConnection<String>,
-    portname: String,
+    connection: MidiInputConnection<(String, KeyEmulationType)>
 }
 
-fn refresh_connections(input_map: &mut HashMap<String, MidiChannel>) {
+fn refresh_connections(key_emulation: &KeyEmulationType, input_map: &mut HashMap<String, MidiChannel>) {
     let mut touched_ports_map = HashMap::new();
 
     let init_midi = MidiInput::new("midir reading input").unwrap();
@@ -69,12 +76,13 @@ fn refresh_connections(input_map: &mut HashMap<String, MidiChannel>) {
         let local_midi_in = MidiInput::new("midir reading input").unwrap();
         let in_port = touched_ports_map.get(port_name).unwrap();
 
-        let conn = local_midi_in.connect(in_port, "midi-port", |stamp, message, closure_port_name| {
-            midi_listener(stamp, &message, &closure_port_name);
-        }, port_name.clone());
+        let pair = (port_name.clone(), key_emulation.clone());
+        let conn = local_midi_in.connect(in_port, "midi-port", |_, message, closure_pair| {
+            midi_listener(closure_pair.1.clone(), &message, closure_pair.0.clone());
+        }, pair);
 
         if conn.is_ok() {
-            input_map.insert(port_name.clone(), MidiChannel { connection: conn.unwrap(), portname: port_name.clone() });
+            input_map.insert(port_name.clone(), MidiChannel { connection: conn.unwrap() });
         } else {
             println!("Lost Connection: {}", port_name);
             input_map.remove(port_name).unwrap().connection.close();
@@ -88,12 +96,12 @@ lazy_static! {
 }
 
 // static map maybe?
-fn midi_listener(stamp: u64, message: &[u8], port_name: &String) {
-    // i want the current buffer (a, c, d, g, 3) & buffer begin time.
-    let millis = SystemTime::now()
-        .duration_since(UNIX_EPOCH)
-        .unwrap()
-        .as_millis();
+fn midi_listener(key_emulation: KeyEmulationType, message: &[u8], port_name: String) {
+    // // i want the current buffer (a, c, d, g, 3) & buffer begin time.
+    // let millis = SystemTime::now()
+    //     .duration_since(UNIX_EPOCH)
+    //     .unwrap()
+    //     .as_millis();
 
     // println!("{}: {:?} (len = {})", stamp, message, message.len());
     if message.len() >= 2 {
@@ -103,27 +111,20 @@ fn midi_listener(stamp: u64, message: &[u8], port_name: &String) {
                 BUFFER_MAP.lock().unwrap().get_mut(&port_name.clone()).unwrap().insert(note.clone());
 
                 let new_port_name = port_name.clone();
-                let local_thread = thread::spawn(move || {
+                thread::spawn(move || {
                     let wait_time = Duration::from_millis(AFTER_PRESS_WAIT);
                     thread::sleep(wait_time);
 
                     let snapshot_of_charset = BUFFER_MAP.lock().unwrap().get(&new_port_name.clone()).unwrap().clone();
                     BUFFER_MAP.lock().unwrap().get_mut(&new_port_name.clone()).unwrap().clear();
                     let layout_str = chars_to_layout_str(&snapshot_of_charset);
-                    let modifiers = get_modifiers(&snapshot_of_charset);
+                    let modifiers = get_modifiers(&key_emulation, &snapshot_of_charset);
 
                     if *ENABLED_MAP.lock().unwrap().get(&new_port_name.clone()).unwrap() {
                         if layout_str.len() >= 5 {
                             ENABLED_MAP.lock().unwrap().insert(new_port_name.clone(), false);
                         } else {
-                            let key = LAYOUT.get(layout_str.as_str()).unwrap_or(&"invalid");
-                            if *key != "invalid" {
-                                Command::new("xdotool")
-                                    .arg("key")
-                                    .arg(concat([modifiers, vec![String::from(*key)]]).join(&String::from("+")))
-                                    .spawn()
-                                    .expect("echo failed");
-                            }
+                            simulate_keyboard_press(&key_emulation, modifiers, layout_str);
                         }
                     } else if modifiers.len() == 5 {
                         ENABLED_MAP.lock().unwrap().insert(new_port_name.clone(), true);
@@ -138,14 +139,19 @@ fn midi_listener(stamp: u64, message: &[u8], port_name: &String) {
     }
 }
 
-fn get_modifiers(chars: &HashSet<char>) -> Vec<String> {
+fn get_modifiers(key_emulation: &KeyEmulationType, chars: &HashSet<char>) -> Vec<String> {
     let mut modifiers = Vec::new();
     let mut sorted_chars: Vec<&char> = chars.into_iter().collect();
     sorted_chars.sort();
 
     for character in &sorted_chars {
         if **character >= '0' && **character <= '4' {
-            modifiers.push(String::from(*LAYOUT.get(character.to_string().as_str()).unwrap_or(&"invalid")));
+            match LAYOUT.get(character.to_string().as_str()) {
+                Some(key) => {
+                    modifiers.push(String::from(key[*key_emulation as usize]));
+                },
+                None => { }
+            }
         }
     }
     return modifiers;
@@ -163,4 +169,22 @@ fn chars_to_layout_str(chars: &HashSet<char>) -> String {
     layout_chars.sort();
 
     return layout_chars.into_iter().collect();
+}
+
+fn simulate_keyboard_press(key_emulation: &KeyEmulationType, modifiers: Vec<String>, layout_str: String) {
+    match LAYOUT.get(layout_str.as_str()) {
+        Some(key) => {
+            match *key_emulation {
+                KeyEmulationType::Xdotool => {
+                    Command::new("xdotool")
+                        .arg("key")
+                        .arg(concat([modifiers, vec![String::from(key[*key_emulation as usize])]]).join(&String::from("+")))
+                        .spawn()
+                        .expect("echo failed");
+                },
+                _ => {},
+            }
+        },
+        None      => {},
+    }
 }

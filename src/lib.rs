@@ -2,6 +2,13 @@ extern crate lazy_static;
 
 use lazy_static::lazy_static;
 use std::collections::HashMap;
+use clap::{Parser, ArgEnum};
+
+#[derive(Parser, ArgEnum, Debug, Clone, Copy)]
+pub enum KeyEmulationType {
+    Xdotool = 0,
+    Other = 1,
+}
 
 lazy_static! {
     pub static ref NUM_TO_NOTE: HashMap<u8, char> = {
@@ -21,83 +28,84 @@ lazy_static! {
         ])
     };
 
-    pub static ref LAYOUT: HashMap<&'static str, &'static str> = {
+    pub static ref LAYOUT: HashMap<&'static str, [&'static str; 2]> = {
         HashMap::from([
-            ("a"      , "k"           ),
-            ("b"      , "l"           ),
-            ("c"      , "h"           ),
-            ("d"      , "j"           ),
-            ("e"      , "a"           ),
-            ("f"      , "e"           ),
-            ("g"      , "t"           ),
+			// midi      xdotool         ????
+            ("a"      , ["k"           , "k"           ]),
+            ("b"      , ["l"           , "l"           ]),
+            ("c"      , ["h"           , "h"           ]),
+            ("d"      , ["j"           , "j"           ]),
+            ("e"      , ["a"           , "a"           ]),
+            ("f"      , ["e"           , "e"           ]),
+            ("g"      , ["t"           , "t"           ]),
 
-            ("ab"     , "z"           ),
-            ("ac"     , "u"           ),
-            ("ad"     , "space"       ),
-            ("ae"     , "r"           ),
-            ("af"     , "m"           ),
-            ("ag"     , "f"           ),
-            ("bc"     , "BackSpace"   ),
-            ("bd"     , "n"           ),
-            ("be"     , "d"           ),
-            ("bf"     , "p"           ),
-            ("bg"     , "g"           ),
-            ("cd"     , "v"           ),
-            ("ce"     , "c"           ),
-            ("cf"     , "w"           ),
-            ("cg"     , "y"           ),
-            ("de"     , "x"           ),
-            ("df"     , "o"           ),
-            ("dg"     , "i"           ),
-            ("ef"     , "q"           ),
-            ("eg"     , "s"           ),
-            ("fg"     , "b"           ),
+            ("ab"     , ["z"           , "z"           ]),
+            ("ac"     , ["u"           , "u"           ]),
+            ("ad"     , ["space"       , "space"       ]),
+            ("ae"     , ["r"           , "r"           ]),
+            ("af"     , ["m"           , "m"           ]),
+            ("ag"     , ["f"           , "f"           ]),
+            ("bc"     , ["BackSpace"   , "BackSpace"   ]),
+            ("bd"     , ["n"           , "n"           ]),
+            ("be"     , ["d"           , "d"           ]),
+            ("bf"     , ["p"           , "p"           ]),
+            ("bg"     , ["g"           , "g"           ]),
+            ("cd"     , ["v"           , "v"           ]),
+            ("ce"     , ["c"           , "c"           ]),
+            ("cf"     , ["w"           , "w"           ]),
+            ("cg"     , ["y"           , "y"           ]),
+            ("de"     , ["x"           , "x"           ]),
+            ("df"     , ["o"           , "o"           ]),
+            ("dg"     , ["i"           , "i"           ]),
+            ("ef"     , ["q"           , "q"           ]),
+            ("eg"     , ["s"           , "s"           ]),
+            ("fg"     , ["b"           , "b"           ]),
 
             // Some things to assign...
             // - = Key.insert Key.delete
-            ("abc"    , "Delete"      ),
-            ("abd"    , ""            ), // unassigned
-            ("abe"    , ""            ), // unassigned
-            ("abf"    , ""            ), // unassigned
-            ("abg"    , "Escape"      ),
-            ("acd"    , "4"           ),
-            ("ace"    , "7"           ),
-            ("acf"    , "9"           ),
-            ("acg"    , "0"           ),
-            ("ade"    , "comma"       ),
-            ("adf"    , "enter"       ),
-            ("adg"    , "period"      ),
-            ("aef"    , "grave"       ),
-            ("aeg"    , "backslash"   ),
-            ("afg"    , "equal"       ),
-            ("bcd"    , "Insert"      ),
-            ("bce"    , "bracketleft" ),
-            ("bcf"    , ""            ), // unassigned
-            ("bcg"    , "bracketright"),
-            ("bde"    , ""            ), // unassigned
-            ("bdf"    , "Tab"         ),
-            ("bdg"    , ""            ), // unassigned
-            ("bef"    , ""            ), // unassigned
-            ("beg"    , ""            ), // unassigned
-            ("bfg"    , ""            ), // unassigned
-            ("cde"    , "1"           ),
-            ("cdf"    , "2"           ),
-            ("cdg"    , "3"           ),
-            ("cef"    , "5"           ),
-            ("ceg"    , "6"           ),
-            ("cfg"    , "8"           ),
-            ("def"    , "minus"       ),
-            ("deg"    , "slash"       ),
-            ("dfg"    , "apostrophe"  ),
-            ("efg"    , "semicolon"   ),
+            ("abc"    , ["Delete"      , "Delete"      ]),
+            ("abd"    , [""            , ""            ]), // unassigned
+            ("abe"    , [""            , ""            ]), // unassigned
+            ("abf"    , [""            , ""            ]), // unassigned
+            ("abg"    , ["Escape"      , "Escape"      ]),
+            ("acd"    , ["4"           , "4"           ]),
+            ("ace"    , ["7"           , "7"           ]),
+            ("acf"    , ["9"           , "9"           ]),
+            ("acg"    , ["0"           , "0"           ]),
+            ("ade"    , ["comma"       , "comma"       ]),
+            ("adf"    , ["enter"       , "enter"       ]),
+            ("adg"    , ["period"      , "period"      ]),
+            ("aef"    , ["grave"       , "grave"       ]),
+            ("aeg"    , ["backslash"   , "backslash"   ]),
+            ("afg"    , ["equal"       , "equal"       ]),
+            ("bcd"    , ["Insert"      , "Insert"      ]),
+            ("bce"    , ["bracketleft" , "bracketleft" ]),
+            ("bcf"    , [""            , ""            ]), // unassigned
+            ("bcg"    , ["bracketright", "bracketright"]),
+            ("bde"    , [""            , ""            ]), // unassigned
+            ("bdf"    , ["Tab"         , "Tab"         ]),
+            ("bdg"    , [""            , ""            ]), // unassigned
+            ("bef"    , [""            , ""            ]), // unassigned
+            ("beg"    , [""            , ""            ]), // unassigned
+            ("bfg"    , [""            , ""            ]), // unassigned
+            ("cde"    , ["1"           , "1"           ]),
+            ("cdf"    , ["2"           , "2"           ]),
+            ("cdg"    , ["3"           , "3"           ]),
+            ("cef"    , ["5"           , "5"           ]),
+            ("ceg"    , ["6"           , "6"           ]),
+            ("cfg"    , ["8"           , "8"           ]),
+            ("def"    , ["minus"       , "minus"       ]),
+            ("deg"    , ["slash"       , "slash"       ]),
+            ("dfg"    , ["apostrophe"  , "apostrophe"  ]),
+            ("efg"    , ["semicolon"   , "semicolon"   ]),
 
             // 5 black keys
-            ("0"      , "alt"         ),
-            ("1"      , ""            ), // fn
-            ("2"      , "super"       ),
-            ("3"      , "shift"       ),
-            ("4"      , "ctrl"        ),
-            ("01234"  , "enable"      ),
+            ("0"      , ["alt"         , "alt"         ]),
+            ("1"      , [""            , ""            ]), // fn
+            ("2"      , ["super"       , "super"       ]),
+            ("3"      , ["shift"       , "shift"       ]),
+            ("4"      , ["ctrl"        , "ctrl"        ]),
+            ("01234"  , ["enable"      , "enable"      ]),
         ])
     };
 }
