@@ -180,7 +180,17 @@ fn simulate_keyboard_press(key_emulation: &KeyEmulationType, modifiers: Vec<Stri
                         .arg("key")
                         .arg(concat([modifiers, vec![String::from(key[*key_emulation as usize])]]).join(&String::from("+")))
                         .spawn()
-                        .expect("echo failed");
+                        .expect("xdotool failed");
+                },
+                KeyEmulationType::Echo => {
+                    let mut _cmd = Command::new("echo");
+                    _cmd.arg("key: ").arg(key[*key_emulation as usize]);
+
+                    if modifiers.len() > 0 {
+                        _cmd.arg(format!("-- ({})", modifiers.join(", ")));
+                    }
+
+                    _cmd.spawn().expect("echo failed");
                 },
                 _ => {},
             }
