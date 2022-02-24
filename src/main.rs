@@ -122,13 +122,19 @@ fn midi_listener(key_emulation: KeyEmulationType, message: &[u8], port_name: Str
                     let modifiers = get_modifiers(&key_emulation, &snapshot_of_charset);
 
                     if *ENABLED_MAP.lock().unwrap().get(&new_port_name.clone()).unwrap() {
+                        // call hatel
                         if layout_str.len() >= 5 {
                             ENABLED_MAP.lock().unwrap().insert(new_port_name.clone(), false);
+                            call_ttrack("piano/hatel", "1s");
                         } else {
                             simulate_keyboard_press(&key_emulation, function_pressed, modifiers, layout_str);
+                            call_ttrack("piano/hatel", "3s");
                         }
                     } else if modifiers.len() == 4 && function_pressed {
                         ENABLED_MAP.lock().unwrap().insert(new_port_name.clone(), true);
+                        call_ttrack("piano/midi", "1s");
+                    } else {
+                        call_ttrack("piano/midi", "3s");
                     }
                 });
             } else {
@@ -216,4 +222,14 @@ fn simulate_keyboard_press(key_emulation: &KeyEmulationType, _function_pressed: 
         },
         None      => {},
     }
+}
+
+// Temporary until we have hooks
+fn call_ttrack(group: &'static str, duration: &'static str) {
+    Command::new("ttrack")
+        .arg("rec")
+        .arg(group)
+        .arg(duration)
+        .spawn()
+        .expect("ttrack failed");
 }
