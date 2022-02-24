@@ -118,15 +118,16 @@ fn midi_listener(key_emulation: KeyEmulationType, message: &[u8], port_name: Str
                     let snapshot_of_charset = BUFFER_MAP.lock().unwrap().get(&new_port_name.clone()).unwrap().clone();
                     BUFFER_MAP.lock().unwrap().get_mut(&new_port_name.clone()).unwrap().clear();
                     let layout_str = chars_to_layout_str(&snapshot_of_charset);
+                    let function_pressed = snapshot_of_charset.contains(&'1');
                     let modifiers = get_modifiers(&key_emulation, &snapshot_of_charset);
 
                     if *ENABLED_MAP.lock().unwrap().get(&new_port_name.clone()).unwrap() {
                         if layout_str.len() >= 5 {
                             ENABLED_MAP.lock().unwrap().insert(new_port_name.clone(), false);
                         } else {
-                            simulate_keyboard_press(&key_emulation, modifiers, layout_str);
+                            simulate_keyboard_press(&key_emulation, function_pressed, modifiers, layout_str);
                         }
-                    } else if modifiers.len() == 5 {
+                    } else if modifiers.len() == 4 && function_pressed {
                         ENABLED_MAP.lock().unwrap().insert(new_port_name.clone(), true);
                     }
                 });
@@ -145,10 +146,13 @@ fn get_modifiers(key_emulation: &KeyEmulationType, chars: &HashSet<char>) -> Vec
     sorted_chars.sort();
 
     for character in &sorted_chars {
-        if **character >= '0' && **character <= '4' {
+        if **character == '0' || (**character >= '2' && **character <= '4') {
             match LAYOUT.get(character.to_string().as_str()) {
                 Some(key) => {
-                    modifiers.push(String::from(key[*key_emulation as usize]));
+                    let val = String::from(key[*key_emulation as usize]);
+                    if val.len() != 0 {
+                        modifiers.push(val);
+                    }
                 },
                 None => { }
             }
@@ -171,7 +175,7 @@ fn chars_to_layout_str(chars: &HashSet<char>) -> String {
     return layout_chars.into_iter().collect();
 }
 
-fn simulate_keyboard_press(key_emulation: &KeyEmulationType, modifiers: Vec<String>, layout_str: String) {
+fn simulate_keyboard_press(key_emulation: &KeyEmulationType, _function_pressed: bool, modifiers: Vec<String>, layout_str: String) {
     match LAYOUT.get(layout_str.as_str()) {
         Some(key) => {
             match *key_emulation {
@@ -198,11 +202,13 @@ fn simulate_keyboard_press(key_emulation: &KeyEmulationType, modifiers: Vec<Stri
 
                     let argstr = format!("tell application \"System Events\" to key code {}", key[*key_emulation as usize]);
 
-                    // let argstr = if modifiers.len() > 0 {
-                    //     format!("{} {}", modifiers.join(", "))
-                    // } else {
-                    //     argstr
-                    // }
+                    let argstr = if modifiers.len() == 1 {
+                        format!("{} using {} down", argstr, modifiers.join(""))
+                    } else if modifiers.len() > 1 {
+                        format!("{} using {{{} down}}", argstr, modifiers.join(" down, "))
+                    } else {
+                        argstr
+                    };
 
                     _cmd.arg(argstr).spawn().expect("osascript failed");
                 },

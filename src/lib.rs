@@ -103,12 +103,12 @@ lazy_static! {
             ("dfg"    , ["'"            , "apostrophe"   , "39"            ]),
             ("efg"    , [";"            , "semicolon"    , "41"            ]),
 
-            ("0"      , ["alt"          , "alt"          , "alt"          ]), // black keys
-            ("1"      , [""             , ""             , ""             ]), // fn
-            ("2"      , ["super"        , "super"        , "super"        ]),
-            ("3"      , ["shift"        , "shift"        , "shift"        ]),
-            ("4"      , ["ctrl"         , "ctrl"         , "ctrl"         ]),
-            ("01234"  , ["enable"       , "enable"       , "enable"       ]),
+            ("0"      , ["alt"          , "alt"          , "option"        ]), // black keys
+            ("1"      , [""             , ""             , ""              ]), // fn
+            ("2"      , ["super"        , "super"        , "command"       ]),
+            ("3"      , ["shift"        , "shift"        , "shift"         ]),
+            ("4"      , ["ctrl"         , "ctrl"         , "control"       ]),
+            ("01234"  , ["enable"       , "enable"       , "enable"        ]),
         ])
     };
 }
