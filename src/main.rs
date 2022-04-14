@@ -1,6 +1,8 @@
 extern crate midir;
 
+use std::u8;
 use std::sync::Mutex;
+use std::fs::OpenOptions;
 use lazy_static::lazy_static;
 use std::collections::HashSet;
 use std::time::Duration;
@@ -9,6 +11,7 @@ use std::thread;
 use hatel::{KeyEmulationType, LAYOUT, NUM_TO_NOTE};
 use std::process::Command;
 use itertools::concat;
+use std::io::Write;
 
 use midir::{MidiInput, MidiInputConnection};
 use clap::{Parser};
@@ -217,6 +220,23 @@ fn simulate_keyboard_press(key_emulation: &KeyEmulationType, _function_pressed: 
                     };
 
                     _cmd.arg(argstr).spawn().expect("osascript failed");
+                },
+                KeyEmulationType::Pi => {
+                    let mut buffer: [u8; 8] = [0; 8];
+                    for modifier in modifiers {
+                        if modifier.len() > 0 {
+                            buffer[0] = buffer[0] | u8::from_str_radix(modifier.as_str(), 16).unwrap();
+                        }
+                    }
+
+                    let key_str = key[*key_emulation as usize];
+                    if key_str.len() > 0 {
+                        buffer[2] = u8::from_str_radix(key_str, 16).unwrap();
+                    }
+
+                    let mut file = OpenOptions::new().write(true).open("/dev/hidg0").unwrap();
+                    file.write_all(&buffer).expect("failed to write to hid device"); // write key
+                    file.write_all(&[0; 8]).expect("failed to write to hid device"); // release keys
                 },
             }
         },
