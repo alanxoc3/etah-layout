@@ -7,6 +7,9 @@ if ! grep dwc2 /etc/modules; then echo "dwc2" >> /etc/modules; fi
 cp ./enable-hid /opt/enable-hid
 chmod u+x /opt/enable-hid
 cp ./enable-hid.service /lib/systemd/system/enable-hid.service
+cp ./hatel.service /lib/systemd/system/hatel.service
 
 systemctl daemon-reload
-systemctl enable usb-gadget.service
+systemctl enable enable-hid.service
+systemctl enable hatel.service
+systemctl start hatel.service

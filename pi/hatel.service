@@ -1,0 +1,8 @@
+[Unit]
+Description=Hatel in systemd.
+
+[Service]
+ExecStart=/home/alarm/hatel pi
+
+[Install]
+WantedBy=multi-user.target
