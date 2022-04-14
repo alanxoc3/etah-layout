@@ -1,3 +1,10 @@
+// If pressed, add to buffer.
+// ElseIf released,
+//     If all released, disable/stop/reset timer.
+//     ElseIf buffer is not empty
+//     Else add to buffer.
+// If all released, disable/stop/reset timer.
+
 extern crate midir;
 
 use std::sync::Mutex;
@@ -91,59 +98,66 @@ fn refresh_connections(key_emulation: &KeyEmulationType, input_map: &mut HashMap
 }
 
 lazy_static! {
-    static ref BUFFER_MAP: Mutex<HashMap<String, HashSet<char>>> = Mutex::new(HashMap::new());
+    // BUFFER_MAP is a map from input (eg piano1 or piano2) to a list of midi signals (one midi signal is represented by Vec<u8>).
+    static ref BUFFER_MAP: Mutex<HashMap<String, Vec<Vec<u8>> >> = Mutex::new(HashMap::new());
     static ref ENABLED_MAP: Mutex<HashMap<String, bool>> = Mutex::new(HashMap::new());
 }
 
 // static map maybe?
 fn midi_listener(key_emulation: KeyEmulationType, message: &[u8], port_name: String) {
-    // // i want the current buffer (a, c, d, g, 3) & buffer begin time.
-    // let millis = SystemTime::now()
-    //     .duration_since(UNIX_EPOCH)
-    //     .unwrap()
-    //     .as_millis();
+    let message = message.to_vec();
 
-    // println!("{}: {:?} (len = {})", stamp, message, message.len());
-    if message.len() >= 2 {
-        let note = num_to_note(message[1]);
-        if message[2] != 0 {
-            if BUFFER_MAP.lock().unwrap().get_mut(&port_name.clone()).unwrap().len() == 0 {
-                BUFFER_MAP.lock().unwrap().get_mut(&port_name.clone()).unwrap().insert(note.clone());
+    // Set a timer if
+    if BUFFER_MAP.lock().unwrap().get_mut(&port_name.clone()).unwrap().len() == 0 {
+        BUFFER_MAP.lock().unwrap().get_mut(&port_name.clone()).unwrap().push(message);
 
-                let new_port_name = port_name.clone();
-                thread::spawn(move || {
-                    let wait_time = Duration::from_millis(AFTER_PRESS_WAIT);
-                    thread::sleep(wait_time);
+        let wait_time = Duration::from_millis(AFTER_PRESS_WAIT);
+        thread::sleep(wait_time);
 
-                    let snapshot_of_charset = BUFFER_MAP.lock().unwrap().get(&new_port_name.clone()).unwrap().clone();
-                    BUFFER_MAP.lock().unwrap().get_mut(&new_port_name.clone()).unwrap().clear();
-                    let layout_str = chars_to_layout_str(&snapshot_of_charset);
-                    let function_pressed = snapshot_of_charset.contains(&'1');
-                    let modifiers = get_modifiers(&key_emulation, &snapshot_of_charset);
-
-                    if *ENABLED_MAP.lock().unwrap().get(&new_port_name.clone()).unwrap() {
-                        // call hatel
-                        if layout_str.len() >= 5 {
-                            ENABLED_MAP.lock().unwrap().insert(new_port_name.clone(), false);
-                            call_ttrack("piano/hatel", "1s");
-                        } else {
-                            simulate_keyboard_press(&key_emulation, function_pressed, modifiers, layout_str);
-                            call_ttrack("piano/hatel", "3s");
-                        }
-                    } else if modifiers.len() == 4 && function_pressed {
-                        ENABLED_MAP.lock().unwrap().insert(new_port_name.clone(), true);
-                        call_ttrack("piano/midi", "1s");
-                    } else {
-                        call_ttrack("piano/midi", "3s");
-                    }
-                });
-            } else {
-                BUFFER_MAP.lock().unwrap().get_mut(&port_name.clone()).unwrap().insert(note.clone());
-            }
-
-            // println!("{}: {}, {}, {}", note, LAYOUT.get(&note.to_string().as_str()).unwrap_or(&"invalid"), millis, stamp);
-        }
+        let snapshot_of_charset = BUFFER_MAP.lock().unwrap().get(&port_name.clone()).unwrap().clone();
+        BUFFER_MAP.lock().unwrap().get_mut(&port_name.clone()).unwrap().clear();
+    } else {
+        BUFFER_MAP.lock().unwrap().get_mut(&port_name.clone()).unwrap().push(message);
     }
+
+        // if message.len() >= 3 {
+        // let note = num_to_note(message[1]);
+        // if message[2] != 0 {
+        // let new_message = message.to_vec();
+
+
+        let new_port_name = port_name.clone();
+        thread::spawn(move || {
+            simulate_keyboard_press(BUFFER_MAP.lock().&key_emulation, function_pressed, modifiers, layout_str, new_message);
+
+
+            let snapshot_of_charset = BUFFER_MAP.lock().unwrap().get(&new_port_name.clone()).unwrap().clone();
+            BUFFER_MAP.lock().unwrap().get_mut(&new_port_name.clone()).unwrap().clear();
+            let layout_str = chars_to_layout_str(&snapshot_of_charset);
+            let function_pressed = snapshot_of_charset.contains(&'1');
+            let modifiers = get_modifiers(&key_emulation, &snapshot_of_charset);
+
+            if *ENABLED_MAP.lock().unwrap().get(&new_port_name.clone()).unwrap() {
+                // call hatel
+                if layout_str.len() >= 5 {
+                    ENABLED_MAP.lock().unwrap().insert(new_port_name.clone(), false);
+                    call_ttrack("piano/hatel", "1s");
+                } else {
+                    simulate_keyboard_press(&key_emulation, function_pressed, modifiers, layout_str, new_message);
+                    call_ttrack("piano/hatel", "3s");
+                }
+            } else if modifiers.len() == 4 && function_pressed {
+                ENABLED_MAP.lock().unwrap().insert(new_port_name.clone(), true);
+                call_ttrack("piano/midi", "1s");
+            } else {
+                call_ttrack("piano/midi", "3s");
+            }
+        });
+    } else {
+        BUFFER_MAP.lock().unwrap().get_mut(&port_name.clone()).unwrap().push(message.to_vec());
+    }
+
+    // println!("{}: {}, {}, {}", note, LAYOUT.get(&note.to_string().as_str()).unwrap_or(&"invalid"), millis, stamp);
 }
 
 fn get_modifiers(key_emulation: &KeyEmulationType, chars: &HashSet<char>) -> Vec<String> {
@@ -181,7 +195,7 @@ fn chars_to_layout_str(chars: &HashSet<char>) -> String {
     return layout_chars.into_iter().collect();
 }
 
-fn simulate_keyboard_press(key_emulation: &KeyEmulationType, _function_pressed: bool, modifiers: Vec<String>, layout_str: String) {
+fn simulate_keyboard_press(key_emulation: &KeyEmulationType, _function_pressed: bool, modifiers: Vec<String>, layout_str: String, message: Vec<u8>) {
     match LAYOUT.get(layout_str.as_str()) {
         Some(key) => {
             match *key_emulation {
@@ -191,6 +205,15 @@ fn simulate_keyboard_press(key_emulation: &KeyEmulationType, _function_pressed: 
 
                     if modifiers.len() > 0 {
                         _cmd.arg(format!("-- ({})", modifiers.join(", ")));
+                    }
+
+                    _cmd.spawn().expect("echo failed");
+                },
+                KeyEmulationType::Midi => {
+                    let mut _cmd = Command::new("echo");
+
+                    for part in message {
+                        _cmd.arg(part.to_string());
                     }
 
                     _cmd.spawn().expect("echo failed");

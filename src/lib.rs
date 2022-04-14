@@ -9,11 +9,14 @@ pub enum KeyEmulationType {
     // prints printable characters and shows the name of non-printable characters.
     Echo = 0,
 
+    // prints the raw midi numbers in an array form.
+    Midi = 1,
+
     // https://gitlab.com/cunidev/gestures/-/wikis/xdotool-list-of-key-codes
-    Xdotool = 1,
+    Xdotool = 2,
 
     // https://eastmanreference.com/complete-list-of-applescript-key-codes
-    Osascript = 2,
+    Osascript = 3,
 }
 
 lazy_static! {
