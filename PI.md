@@ -2,6 +2,8 @@
 
 https://stackoverflow.com/questions/20943322/accessing-keys-from-linux-input-device
 
+https://eleccelerator.com/tutorial-about-usb-hid-report-descriptors/
+
 - low power mode: https://github.com/seamusdemora/PiFormulae/blob/master/RPi4bSleep.md
 - emulate keyboard with usb c https://mtlynch.io/key-mime-pi/
 - enable hid: https://github.com/mtlynch/key-mime-pi/blob/master/enable-usb-hid

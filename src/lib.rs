@@ -115,3 +115,128 @@ lazy_static! {
         ])
     };
 }
+
+// use std::sync::Mutex;
+// use lazy_static::lazy_static;
+// use hatel::{KeyEmulationType, LAYOUT, NUM_TO_NOTE};
+// use std::process::Command;
+// use itertools::concat;
+
+// Arguments the program accepts.
+// #[derive(Parser, Debug)]
+// #[clap(version)]
+// struct Args {
+//     /// Method for key input
+//     #[clap(arg_enum)]
+//     key_emulation: KeyEmulationType,
+// }
+// fn num_to_note(note_num: u8) -> char {
+//     NUM_TO_NOTE.get(&(note_num % 12)).unwrap().clone()
+// }
+// 
+// const AFTER_PRESS_WAIT: u64 = 100;
+
+// lazy_static! {
+//     // BUFFER_MAP is a map from input (eg piano1 or piano2) to a list of midi signals (one midi signal is represented by Vec<u8>).
+//     static ref BUFFER_MAP: Mutex<HashMap<String, Vec<Vec<u8>> >> = Mutex::new(HashMap::new());
+//     static ref ENABLED_MAP: Mutex<HashMap<String, bool>> = Mutex::new(HashMap::new());
+// }
+// 
+// // static map maybe?
+//
+// fn get_modifiers(key_emulation: &KeyEmulationType, chars: &HashSet<char>) -> Vec<String> {
+//     let mut modifiers = Vec::new();
+//     let mut sorted_chars: Vec<&char> = chars.into_iter().collect();
+//     sorted_chars.sort();
+// 
+//     for character in &sorted_chars {
+//         if **character == '0' || (**character >= '2' && **character <= '4') {
+//             match LAYOUT.get(character.to_string().as_str()) {
+//                 Some(key) => {
+//                     let val = String::from(key[*key_emulation as usize]);
+//                     if val.len() != 0 {
+//                         modifiers.push(val);
+//                     }
+//                 },
+//                 None => { }
+//             }
+//         }
+//     }
+//     return modifiers;
+// }
+// 
+// fn chars_to_layout_str(chars: &HashSet<char>) -> String {
+//     let mut layout_chars = Vec::new();
+// 
+//     for character in chars {
+//         if *character >= 'a' && *character <= 'g' {
+//             layout_chars.push(character.clone());
+//         }
+//     }
+// 
+//     layout_chars.sort();
+// 
+//     return layout_chars.into_iter().collect();
+// }
+// 
+// fn simulate_keyboard_press(key_emulation: &KeyEmulationType, _function_pressed: bool, modifiers: Vec<String>, layout_str: String, message: Vec<u8>) {
+//     match LAYOUT.get(layout_str.as_str()) {
+//         Some(key) => {
+//             match *key_emulation {
+//                 KeyEmulationType::Echo => {
+//                     let mut _cmd = Command::new("echo");
+//                     _cmd.arg("key: ").arg(key[*key_emulation as usize]);
+// 
+//                     if modifiers.len() > 0 {
+//                         _cmd.arg(format!("-- ({})", modifiers.join(", ")));
+//                     }
+// 
+//                     _cmd.spawn().expect("echo failed");
+//                 },
+//                 KeyEmulationType::Midi => {
+//                     let mut _cmd = Command::new("echo");
+// 
+//                     for part in message {
+//                         _cmd.arg(part.to_string());
+//                     }
+// 
+//                     _cmd.spawn().expect("echo failed");
+//                 },
+//                 KeyEmulationType::Xdotool => {
+//                     Command::new("xdotool")
+//                         .arg("key")
+//                         .arg(concat([modifiers, vec![String::from(key[*key_emulation as usize])]]).join(&String::from("+")))
+//                         .spawn()
+//                         .expect("xdotool failed");
+//                 },
+//                 KeyEmulationType::Osascript => {
+//                     let mut _cmd = Command::new("osascript");
+//                     _cmd.arg("-e");
+// 
+//                     let argstr = format!("tell application \"System Events\" to key code {}", key[*key_emulation as usize]);
+// 
+//                     let argstr = if modifiers.len() == 1 {
+//                         format!("{} using {} down", argstr, modifiers.join(""))
+//                     } else if modifiers.len() > 1 {
+//                         format!("{} using {{{} down}}", argstr, modifiers.join(" down, "))
+//                     } else {
+//                         argstr
+//                     };
+// 
+//                     _cmd.arg(argstr).spawn().expect("osascript failed");
+//                 },
+//             }
+//         },
+//         None      => {},
+//     }
+// }
+// 
+// // Temporary until we have hooks
+// fn call_ttrack(group: &'static str, duration: &'static str) {
+//     Command::new("ttrack")
+//         .arg("rec")
+//         .arg(group)
+//         .arg(duration)
+//         .spawn()
+//         .expect("ttrack failed");
+// }
