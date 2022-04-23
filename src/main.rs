@@ -29,10 +29,18 @@ fn main() {
     // }
 }
 
-// Next: add tx to midichannel, to close dead midi connections
 struct MidiChannel {
     midi_thread: thread::JoinHandle<()>,
-    midi_connection: MidiInputConnection<(mpsc::Sender<MidiThreadMessage>,)>
+    midi_connection: MidiInputConnection<(mpsc::Sender<MidiThreadMessage>,)>,
+    midi_thread_tx: mpsc::Sender<MidiThreadMessage>
+}
+
+fn close_connection(port_name: &String, input_map: &mut HashMap<String, MidiChannel>) {
+    let chan = input_map.remove(port_name).unwrap();
+    chan.midi_connection.close();
+    chan.midi_thread_tx.send(MidiThreadMessage { variant: MidiThreadMessageVariant::Terminate, note: 0 }).unwrap();
+    chan.midi_thread.join().expect("could not wait for midi thread to close");
+    println!("Lost Connection: {}", &port_name);
 }
 
 fn refresh_connections(input_map: &mut HashMap<String, MidiChannel>, mode_tx: mpsc::Sender<String>) {
@@ -48,21 +56,14 @@ fn refresh_connections(input_map: &mut HashMap<String, MidiChannel>, mode_tx: mp
     let prev_ports: HashSet<String> = input_map.keys().cloned().collect();
     let touched_ports: HashSet<String> = touched_ports_map.keys().cloned().collect();
     for x in prev_ports.difference(&touched_ports) {
-        println!("Lost Connection: {}", x);
-        let chan = input_map.remove(x).unwrap();
-        chan.midi_connection.close();
+        close_connection(x, input_map);
     }
 
     for port_name in touched_ports.difference(&prev_ports) {
-        println!("New Connection: {}", port_name);
-
         let local_midi_in = MidiInput::new("midir reading input").unwrap();
         let in_port = touched_ports_map.get(port_name).unwrap();
 
         let (midi_tx, midi_rx) = mpsc::channel();
-        let local_mode_tx = mode_tx.clone();
-        let local_midi_thread = thread::spawn(move || { midi_thread(midi_rx, local_mode_tx); });
-
         let conn = local_midi_in.connect(in_port, "midi-port", |_, message, pair| {
             if message.len() >= 3 {
                 pair.0.send(MidiThreadMessage { variant: if message[2] != 0 { MidiThreadMessageVariant::Press } else { MidiThreadMessageVariant::Release }, note: message[1] }).unwrap();
@@ -70,10 +71,10 @@ fn refresh_connections(input_map: &mut HashMap<String, MidiChannel>, mode_tx: mp
         }, (midi_tx.clone(),));
 
         if conn.is_ok() {
-            input_map.insert(port_name.clone(), MidiChannel { midi_thread: local_midi_thread, midi_connection: conn.unwrap() });
-        } else {
-            println!("Lost Connection: {}", port_name);
-            input_map.remove(port_name).unwrap().midi_connection.close();
+            println!("New Connection: {}", port_name);
+            let local_mode_tx = mode_tx.clone();
+            let local_midi_thread = thread::spawn(move || { midi_thread(midi_rx, local_mode_tx); });
+            input_map.insert(port_name.clone(), MidiChannel { midi_thread: local_midi_thread, midi_connection: conn.unwrap(), midi_thread_tx: midi_tx });
         }
     }
 }
