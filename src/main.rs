@@ -43,7 +43,7 @@ fn close_connection(port_name: &String, input_map: &mut HashMap<String, MidiChan
     println!("Lost Connection: {}", &port_name);
 }
 
-fn refresh_connections(input_map: &mut HashMap<String, MidiChannel>, mode_tx: mpsc::Sender<String>) {
+fn refresh_connections(input_map: &mut HashMap<String, MidiChannel>, mode_tx: mpsc::Sender<ChordThreadMessage>) {
     let mut touched_ports_map = HashMap::new();
 
     let init_midi = MidiInput::new("midir reading input").unwrap();
@@ -79,24 +79,46 @@ fn refresh_connections(input_map: &mut HashMap<String, MidiChannel>, mode_tx: mp
     }
 }
 
-enum MidiThreadMessageVariant { Terminate, Timeout, Press, Release }
+#[derive(PartialEq)] enum MidiThreadMessageVariant { Terminate, Timeout, Press, Release }
 struct MidiThreadMessage { variant: MidiThreadMessageVariant, note: u8 }
-fn midi_thread(midi_rx: mpsc::Receiver<MidiThreadMessage>, mode_tx: mpsc::Sender<String>) {
-    for received in midi_rx {
-        let variant_str = match received.variant {
+fn midi_thread(midi_rx: mpsc::Receiver<MidiThreadMessage>, mode_tx: mpsc::Sender<ChordThreadMessage>) {
+    for m in midi_rx {
+        let variant_str = match m.variant {
             MidiThreadMessageVariant::Terminate => "Terminate",
-            MidiThreadMessageVariant::Timeout => "Timeout",
-            MidiThreadMessageVariant::Press=> "Press",
-            MidiThreadMessageVariant::Release => "Release",
+            MidiThreadMessageVariant::Timeout   => "Timeout",
+            MidiThreadMessageVariant::Press     => "Press",
+            MidiThreadMessageVariant::Release   => "Release",
         };
 
-        println!("send: {} {}", variant_str, received.note);
-        mode_tx.send(format!("{}: {}", received.note, variant_str)).unwrap();
+        println!("send: {} {}", variant_str, m.note);
+
+        if m.variant == MidiThreadMessageVariant::Press || m.variant == MidiThreadMessageVariant::Release {
+            let variant = match m.variant {
+                MidiThreadMessageVariant::Press => ChordThreadMessageVariant::Press,
+                MidiThreadMessageVariant::Release => ChordThreadMessageVariant::Release,
+                _ => ChordThreadMessageVariant::Press
+            };
+
+            mode_tx.send(ChordThreadMessage {variant: variant, modifiers: vec![], notes: vec![]}).unwrap();
+        }
     }
 }
 
-fn chord_thread(rx: mpsc::Receiver<String>) {
-    for received in rx {
-        println!("receive: {}", received);
+enum Note { A, B, C, D, E, F, G }
+#[derive(PartialEq)] enum ChordThreadMessageVariant { Press, Release }
+enum Modifier { M0, M1, M2, M3, M4 }
+struct ChordThreadMessage { variant: ChordThreadMessageVariant, modifiers: Vec<Modifier>, notes: Vec<Note> }
+
+// common for all modes...
+// receives "enum(press,release)", list of modifiers, list of notes (chord)
+// executes: cmd p:0 d:123 d:af r:abd ...
+fn chord_thread(rx: mpsc::Receiver<ChordThreadMessage>) {
+    for m in rx {
+        let variant = match m.variant {
+            ChordThreadMessageVariant::Press => "PRESS",
+            ChordThreadMessageVariant::Release => "RELEASE"
+        };
+
+        println!("receive: {}", variant);
     }
 }
