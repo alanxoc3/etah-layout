@@ -65,8 +65,18 @@ fn refresh_connections(input_map: &mut HashMap<String, MidiChannel>, mode_tx: mp
 
         let (midi_tx, midi_rx) = mpsc::channel();
         let conn = local_midi_in.connect(in_port, "midi-port", |_, message, pair| {
-            if message.len() >= 3 {
-                pair.0.send(MidiThreadMessage { variant: if message[2] != 0 { MidiThreadMessageVariant::Press } else { MidiThreadMessageVariant::Release }, note: message[1] }).unwrap();
+            // note on and off messages always have a length of 3
+            if message.len() == 3 {
+                let variant = match message[0] & 0b01110000 {
+                    0b00000000 => MidiThreadMessageVariant::Release,   // note off
+                    0b00010000 => MidiThreadMessageVariant::Press,     // note on
+                    default    => MidiThreadMessageVariant::Terminate  // ignore, doesn't terminate
+                };
+
+                if variant != MidiThreadMessageVariant::Terminate {
+                    println!("message ({}): {:?}", message.len(), message);
+                    pair.0.send(MidiThreadMessage { variant: variant, note: message[1] }).unwrap();
+                }
             }
         }, (midi_tx.clone(),));
 
@@ -119,6 +129,6 @@ fn chord_thread(rx: mpsc::Receiver<ChordThreadMessage>) {
             ChordThreadMessageVariant::Release => "RELEASE"
         };
 
-        println!("receive: {}", variant);
+        // println!("receive: {}", variant);
     }
 }

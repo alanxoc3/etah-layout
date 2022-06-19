@@ -29,3 +29,15 @@ cross build --target armv7-unknown-linux-gnueabihf
 ifconfig # Look for inet & mask
 nmap -sn 192.168.0.0/24
 ```
+
+status bytes and databytes
+status bytes always start with a 1
+data bytes always start with a 0
+
+STATUS
+reserved     channel
+1        111 0000
+status: 000 -- note off
+status: 001 -- note on
+status: 010 -- polyphonic aftertouch
+
