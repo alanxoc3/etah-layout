@@ -36,7 +36,7 @@ data bytes always start with a 0
 
 STATUS
 reserved     channel
-1        111 0000
+1       111 0000
 status: 000 -- note off
 status: 001 -- note on
 status: 010 -- polyphonic aftertouch

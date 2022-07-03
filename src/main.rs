@@ -2,6 +2,7 @@ extern crate midir;
 
 use std::collections::HashSet;
 use std::time::Duration;
+use std::time::Instant;
 use std::collections::HashMap;
 use std::thread;
 use std::sync::mpsc;
@@ -31,14 +32,14 @@ fn main() {
 
 struct MidiChannel {
     midi_thread: thread::JoinHandle<()>,
-    midi_connection: MidiInputConnection<(mpsc::Sender<MidiThreadMessage>,)>,
+    midi_connection: MidiInputConnection<(mpsc::Sender<MidiThreadMessage>,String)>,
     midi_thread_tx: mpsc::Sender<MidiThreadMessage>
 }
 
 fn close_connection(port_name: &String, input_map: &mut HashMap<String, MidiChannel>) {
     let chan = input_map.remove(port_name).unwrap();
     chan.midi_connection.close();
-    chan.midi_thread_tx.send(MidiThreadMessage { variant: MidiThreadMessageVariant::Terminate, note: 0 }).unwrap();
+    chan.midi_thread_tx.send(MidiThreadMessage { source: port_name.clone(), start_time: Instant::now(), variant: MidiThreadMessageVariant::Terminate, note: 0 }).unwrap();
     chan.midi_thread.join().expect("could not wait for midi thread to close");
     println!("Lost Connection: {}", &port_name);
 }
@@ -75,10 +76,10 @@ fn refresh_connections(input_map: &mut HashMap<String, MidiChannel>, mode_tx: mp
 
                 if variant != MidiThreadMessageVariant::Terminate {
                     println!("message ({}): {:?}", message.len(), message);
-                    pair.0.send(MidiThreadMessage { variant: variant, note: message[1] }).unwrap();
+                    pair.0.send(MidiThreadMessage { source: pair.1.clone(), start_time: Instant::now(), variant: variant, note: message[1] }).unwrap();
                 }
             }
-        }, (midi_tx.clone(),));
+        }, (midi_tx.clone(), port_name.clone()));
 
         if conn.is_ok() {
             println!("New Connection: {}", port_name);
@@ -89,18 +90,40 @@ fn refresh_connections(input_map: &mut HashMap<String, MidiChannel>, mode_tx: mp
     }
 }
 
+#[derive(PartialEq)] enum MidiStateVariant { Press, Timeout }
+
+type ChordState = Vec<u8>;
+struct TimeoutChord { timeoutStart: Instant, notes: Vec<u8>, }
+struct MidiState<'a> {
+    noteToChord:  HashMap<u8, &'a ChordState>,
+    chords: HashSet<ChordState>,
+    sourceToTimeoutChord: HashMap<String, TimeoutChord>,
+}
+
+impl<'a> MidiState<'a> {
+    fn new(source: String, first_note: u8) -> MidiState<'a> {
+        MidiState { noteToChord: HashMap::new(), chords: HashSet::new(), sourceToTimeoutChord: HashMap::new() }
+    }
+}
+
+// Responsible for state or whatever calls chord thread.
 #[derive(PartialEq)] enum MidiThreadMessageVariant { Terminate, Timeout, Press, Release }
-struct MidiThreadMessage { variant: MidiThreadMessageVariant, note: u8 }
+struct MidiThreadMessage { source: String, start_time: Instant, variant: MidiThreadMessageVariant, note: u8 }
 fn midi_thread(midi_rx: mpsc::Receiver<MidiThreadMessage>, mode_tx: mpsc::Sender<ChordThreadMessage>) {
     for m in midi_rx {
-        let variant_str = match m.variant {
-            MidiThreadMessageVariant::Terminate => "Terminate",
-            MidiThreadMessageVariant::Timeout   => "Timeout",
-            MidiThreadMessageVariant::Press     => "Press",
-            MidiThreadMessageVariant::Release   => "Release",
-        };
+        match m.variant {
+            MidiThreadMessageVariant::Press     => {
 
-        println!("send: {} {}", variant_str, m.note);
+            },
+            MidiThreadMessageVariant::Release   => {
+
+            },
+            MidiThreadMessageVariant::Terminate => {
+
+            },
+            MidiThreadMessageVariant::Timeout   => {
+            },
+        };
 
         if m.variant == MidiThreadMessageVariant::Press || m.variant == MidiThreadMessageVariant::Release {
             let variant = match m.variant {
@@ -114,14 +137,36 @@ fn midi_thread(midi_rx: mpsc::Receiver<MidiThreadMessage>, mode_tx: mpsc::Sender
     }
 }
 
-enum Note { A, B, C, D, E, F, G }
 #[derive(PartialEq)] enum ChordThreadMessageVariant { Press, Release }
+#[derive(PartialEq)] enum Note { A, B, C, D, E, F, G, M0, M1, M2, M3, M4 }
+
+impl Note {
+    fn from(num: u8) -> Note { match num % 12 {
+        0       => Note::C,
+        1       => Note::M1,
+        2       => Note::D,
+        3       => Note::M2,
+        4       => Note::E,
+        5       => Note::F,
+        6       => Note::M3,
+        7       => Note::G,
+        8       => Note::M4,
+        9       => Note::A,
+        10      => Note::M0,
+        default => Note::B, // default is 11. the compiler doesn't know that all other values are impossible due to the modulus above.
+    } }
+
+    fn is_modifier(&self) -> bool { *self == Note::M0 || *self == Note::M1 || *self == Note::M2 || *self == Note::M3 || *self == Note::M4 }
+}
+
 enum Modifier { M0, M1, M2, M3, M4 }
 struct ChordThreadMessage { variant: ChordThreadMessageVariant, modifiers: Vec<Modifier>, notes: Vec<Note> }
 
 // common for all modes...
 // receives "enum(press,release)", list of modifiers, list of notes (chord)
 // executes: cmd p:0 d:123 d:af r:abd ...
+
+// Responsible for the actual press logic.
 fn chord_thread(rx: mpsc::Receiver<ChordThreadMessage>) {
     for m in rx {
         let variant = match m.variant {
